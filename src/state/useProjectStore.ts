@@ -24,12 +24,14 @@ export type ProjectState = {
 		gradient: { type: 'linear' | 'radial' | 'conic'; stops: GradientStop[]; angle: number };
 	};
 	motion: {
-		preset: 'none' | 'wave' | 'drift' | 'jitter' | 'breathe' | 'bounce' | 'elastic' | 'ripple' | 'cascade' | 'typeOn' | 'liquid' | 'orbit' | 'swirl' | 'shimmer';
+		preset: 'none' | 'vortex' | 'gravity' | 'magnetism' | 'fluidDynamics' | 'quantumFlicker' | 'dimensionalRift' | 'psychedelic' | 'glitchMatrix' | 'organicPulse' | 'cosmicDance' | 'neuralNetwork';
 		amplitude: number;
 		frequency: number;
 		stagger: number;
-		curve: 'linear' | 'easeInOut' | 'easeIn' | 'easeOut';
+		curve: 'linear' | 'easeInOut' | 'easeIn' | 'easeOut' | 'bounce' | 'elastic' | 'back';
 		loopSeconds: number;
+		complexity: number; // 0-1 for layered effects
+		chaos: number; // 0-1 for randomness/noise
 	};
 	renderer: 'svg';
 };
@@ -50,7 +52,7 @@ const defaultState: ProjectState = {
 			{ pos: 1, color: '#00F0FF' },
 		] },
 	},
-	motion: { preset: 'wave', amplitude: 16, frequency: 0.5, stagger: 0.05, curve: 'easeInOut', loopSeconds: 6 },
+	motion: { preset: 'vortex', amplitude: 24, frequency: 0.8, stagger: 0.08, curve: 'elastic', loopSeconds: 8, complexity: 0.7, chaos: 0.3 },
 	renderer: 'svg',
 };
 

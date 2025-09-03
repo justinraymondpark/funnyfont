@@ -22,10 +22,24 @@ export function AnimatedText({ text, ...rest }: Props) {
 				for (let i = 0; i < g.children.length; i++) {
 					const span = g.children[i] as SVGTextElement;
 					const offset = i * motion.stagger;
-					const res = evaluatePreset(motion.preset, phase + offset, motion, i, g.children.length);
-					span.setAttribute('dy', res.dy.toFixed(2));
-					span.setAttribute('dx', (res.dx ?? 0).toFixed(2));
-					span.setAttribute('opacity', res.opacity.toFixed(2));
+					const res = evaluateAdvancedPreset(motion.preset, phase + offset, motion, i, g.children.length, t);
+					
+					// Apply multi-dimensional transforms
+					const transforms = [];
+					if (res.dx !== 0 || res.dy !== 0) transforms.push(`translate(${res.dx.toFixed(2)} ${res.dy.toFixed(2)})`);
+					if (res.scale !== 1) transforms.push(`scale(${res.scale.toFixed(3)})`);
+					if (res.rotation !== 0) transforms.push(`rotate(${res.rotation.toFixed(2)})`);
+					if (res.skewX !== 0) transforms.push(`skewX(${res.skewX.toFixed(2)})`);
+					
+					span.setAttribute('transform', transforms.join(' '));
+					span.setAttribute('opacity', res.opacity.toFixed(3));
+					
+					// Advanced filter effects
+					if (res.blur > 0) {
+						span.setAttribute('filter', `blur(${res.blur.toFixed(1)}px)`);
+					} else {
+						span.removeAttribute('filter');
+					}
 				}
 			}
 			rAF();
@@ -37,7 +51,7 @@ export function AnimatedText({ text, ...rest }: Props) {
 
 		rAF();
 		return () => cancelAnimationFrame(rafId);
-	}, [motion.preset, motion.amplitude, motion.frequency, motion.stagger, motion.curve, motion.loopSeconds]);
+	}, [motion.preset, motion.amplitude, motion.frequency, motion.stagger, motion.curve, motion.loopSeconds, motion.complexity, motion.chaos]);
 
 	return (
 		<g ref={groupRef}>
@@ -50,100 +64,264 @@ export function AnimatedText({ text, ...rest }: Props) {
 	);
 }
 
-function evaluatePreset(
-	preset: 'none' | 'wave' | 'drift' | 'jitter' | 'breathe' | 'bounce' | 'elastic' | 'ripple' | 'cascade' | 'typeOn' | 'liquid' | 'orbit' | 'swirl' | 'shimmer',
-	phase: number,
-	params: { amplitude: number; frequency: number; curve: 'linear' | 'easeInOut' | 'easeIn' | 'easeOut' },
-	index: number,
-	count: number
-) {
-	const { amplitude, frequency, curve } = params;
-	const s = Math.sin(phase * frequency);
-	const eased = applyEasing(s, curve);
-	const center = (count - 1) / 2;
-	const distFromCenter = Math.abs(index - center);
+type AnimationResult = {
+	dx: number;
+	dy: number;
+	scale: number;
+	rotation: number;
+	skewX: number;
+	opacity: number;
+	blur: number;
+};
 
+function evaluateAdvancedPreset(
+	preset: 'none' | 'vortex' | 'gravity' | 'magnetism' | 'fluidDynamics' | 'quantumFlicker' | 'dimensionalRift' | 'psychedelic' | 'glitchMatrix' | 'organicPulse' | 'cosmicDance' | 'neuralNetwork',
+	phase: number,
+	params: { amplitude: number; frequency: number; curve: string; complexity: number; chaos: number },
+	index: number,
+	count: number,
+	time: number
+): AnimationResult {
+	const { amplitude, frequency, curve, complexity, chaos } = params;
+	const center = (count - 1) / 2;
+	const normalizedIndex = index / Math.max(1, count - 1);
+	const distFromCenter = Math.abs(index - center) / Math.max(1, center);
+	
+	// Base result
+	const result: AnimationResult = { dx: 0, dy: 0, scale: 1, rotation: 0, skewX: 0, opacity: 1, blur: 0 };
+	
 	switch (preset) {
 		case 'none':
-			return { dy: 0, opacity: 1 };
-		case 'wave':
-			return { dy: eased * amplitude, opacity: 1 };
-		case 'drift':
-			return { dy: Math.sin(phase * frequency * 0.3) * amplitude * 0.5, opacity: 1 };
-		case 'jitter':
-			return { dy: (Math.random() * 2 - 1) * amplitude * 0.2, opacity: 1 };
-		case 'breathe':
-			return { dy: Math.sin(phase) * amplitude * 0.2, opacity: 0.85 + 0.15 * (0.5 + 0.5 * Math.sin(phase)) };
-		case 'bounce': {
-			const y = Math.abs(Math.sin(phase)) * amplitude;
-			return { dy: y, opacity: 1 };
+			return result;
+			
+		case 'vortex': {
+			const spiral = phase + index * 0.3;
+			const radius = amplitude * (0.5 + 0.5 * Math.sin(phase * 0.3)) * (1 - distFromCenter * 0.3);
+			const vortexStrength = 1 + complexity * 2;
+			
+			result.dx = Math.cos(spiral * vortexStrength) * radius;
+			result.dy = Math.sin(spiral * vortexStrength) * radius * 0.6;
+			result.rotation = spiral * 15 * complexity;
+			result.scale = 0.8 + 0.4 * (Math.sin(phase + index * 0.2) + 1) / 2;
+			result.opacity = 0.7 + 0.3 * (Math.sin(phase * 1.3 + index * 0.15) + 1) / 2;
+			break;
 		}
-		case 'elastic': {
-			const damp = Math.exp(-distFromCenter * 0.1);
-			return { dy: Math.sin(phase * frequency * 2) * amplitude * damp, opacity: 1 };
+		
+		case 'gravity': {
+			const gravityWell = Math.sin(phase * 0.4) * amplitude;
+			const fallSpeed = Math.pow(normalizedIndex, 2) * complexity;
+			const bounce = applyAdvancedEasing(Math.sin(phase * frequency + index * 0.1), 'bounce');
+			
+			result.dy = gravityWell + fallSpeed * bounce * amplitude * 0.8;
+			result.dx = (Math.random() - 0.5) * chaos * amplitude * 0.3;
+			result.scale = 1 - fallSpeed * 0.2;
+			result.skewX = bounce * 5 * complexity;
+			break;
 		}
-		case 'ripple': {
-			const ripplePhase = phase - distFromCenter * 0.3;
-			return { dy: Math.sin(ripplePhase) * amplitude * 0.6, opacity: 1 };
+		
+		case 'magnetism': {
+			const magneticField = Math.sin(phase * frequency) * amplitude;
+			const attraction = Math.cos(phase * 0.7 + index * 0.25) * complexity;
+			const repulsion = Math.sin(phase * 1.3 - index * 0.2) * (1 - complexity);
+			
+			result.dx = (attraction - repulsion) * magneticField * 0.7;
+			result.dy = Math.sin(phase * 2 + index * 0.3) * amplitude * 0.4;
+			result.rotation = (attraction + repulsion) * 20;
+			result.scale = 0.9 + 0.3 * Math.abs(attraction);
+			break;
 		}
-		case 'cascade': {
-			const prog = (Math.sin(phase) + 1) / 2;
-			const visible = index / count < prog;
-			return { dy: visible ? 0 : amplitude * 0.5, opacity: visible ? 1 : 0 };
+		
+		case 'fluidDynamics': {
+			const flow1 = turbulentNoise(time * 0.5 + index * 0.1, 4) * amplitude;
+			const flow2 = turbulentNoise(time * 0.3 + index * 0.15 + 100, 3) * amplitude;
+			const viscosity = 1 - complexity * 0.5;
+			
+			result.dx = flow1 * viscosity;
+			result.dy = flow2 * viscosity * 0.8;
+			result.scale = 0.9 + 0.2 * turbulentNoise(time * 0.8 + index * 0.05, 2);
+			result.opacity = 0.8 + 0.2 * Math.abs(Math.sin(phase + flow1 * 0.1));
+			result.blur = chaos * 2;
+			break;
 		}
-		case 'typeOn': {
-			const speed = Math.max(1, Math.floor(count / 12));
-			const pos = Math.floor(((phase / (Math.PI * 2)) * 1000) / speed) % (count + 1);
-			const visible = index < pos;
-			return { dy: 0, opacity: visible ? 1 : 0 };
+		
+		case 'quantumFlicker': {
+			const quantum = Math.random() < chaos * 0.1;
+			const superposition = Math.sin(phase * frequency * 5 + index) * amplitude;
+			const entanglement = Math.cos(phase * frequency * 3 - index * 0.5) * complexity;
+			
+			if (quantum) {
+				result.dx = (Math.random() - 0.5) * amplitude * 2;
+				result.dy = (Math.random() - 0.5) * amplitude * 2;
+				result.opacity = Math.random() * 0.5 + 0.5;
+			} else {
+				result.dx = superposition * 0.3;
+				result.dy = entanglement * amplitude * 0.4;
+				result.opacity = 0.9 + 0.1 * Math.sin(phase * 10);
+			}
+			
+			result.scale = 0.8 + 0.4 * Math.abs(superposition / amplitude);
+			result.blur = quantum ? chaos * 3 : 0;
+			break;
 		}
-		case 'liquid': {
-			const n = perlin1D(phase * 0.5 + index * 0.15);
-			return { dy: n * amplitude, dx: n * amplitude * 0.25, opacity: 1 };
+		
+		case 'dimensionalRift': {
+			const rift = Math.sin(phase * 0.2) * complexity;
+			const dimension = Math.floor(Math.abs(rift) * 3);
+			const warp = Math.sin(phase * frequency + index * 0.4) * amplitude;
+			
+			switch (dimension) {
+				case 0: // X dimension
+					result.dx = warp * 1.5;
+					result.skewX = rift * 15;
+					break;
+				case 1: // Y dimension
+					result.dy = warp * 1.2;
+					result.scale = 1 + rift * 0.5;
+					break;
+				case 2: // Z dimension (rotation)
+					result.rotation = warp * 0.5 + rift * 45;
+					result.opacity = 0.7 + 0.3 * Math.abs(rift);
+					break;
+			}
+			
+			result.blur = Math.abs(rift) * chaos * 4;
+			break;
 		}
-		case 'orbit': {
-			const a = phase + index * 0.12;
-			return { dy: Math.sin(a) * amplitude * 0.6, dx: Math.cos(a) * amplitude * 0.6, opacity: 1 };
+		
+		case 'psychedelic': {
+			const rainbow = (phase + index * 0.2) % (Math.PI * 2);
+			const trip = Math.sin(rainbow * 3) * amplitude * complexity;
+			const fractal = turbulentNoise(time * 0.4 + index * 0.3, 6);
+			
+			result.dx = Math.cos(rainbow * 2) * trip;
+			result.dy = Math.sin(rainbow * 1.5) * trip * 0.8;
+			result.scale = 0.7 + 0.6 * (Math.sin(rainbow * 4) + 1) / 2;
+			result.rotation = rainbow * 30 + fractal * 180 * chaos;
+			result.skewX = Math.sin(rainbow * 2.5) * 10 * complexity;
+			result.opacity = 0.8 + 0.2 * Math.abs(Math.sin(rainbow * 6));
+			break;
 		}
-		case 'swirl': {
-			const a = phase * 1.2 + index * 0.22;
-			const r = amplitude * (0.25 + (index / Math.max(1, count - 1)) * 0.75);
-			return { dy: Math.sin(a) * r, dx: Math.cos(a) * r * 0.6, opacity: 1 };
+		
+		case 'glitchMatrix': {
+			const glitch = Math.random() < chaos * 0.2;
+			const matrix = Math.sin(phase * frequency * 2 + index * 0.8) * amplitude;
+			const digital = Math.floor(Math.sin(phase + index) * 8) / 8;
+			
+			if (glitch) {
+				result.dx = (Math.random() - 0.5) * amplitude * 3;
+				result.dy = Math.floor((Math.random() - 0.5) * amplitude * 2);
+				result.scale = 0.5 + Math.random() * 1.5;
+				result.opacity = Math.random() * 0.4 + 0.6;
+				result.skewX = (Math.random() - 0.5) * 30;
+			} else {
+				result.dx = digital * amplitude * 0.5;
+				result.dy = matrix * 0.3;
+				result.scale = 0.9 + 0.2 * digital;
+			}
+			
+			result.blur = glitch ? chaos * 5 : 0;
+			break;
 		}
-		case 'shimmer': {
-			const flick = 0.7 + 0.3 * ((Math.sin(phase * 2 + index * 0.45) + 1) / 2);
-			return { dy: 0, dx: 0, opacity: flick };
+		
+		case 'organicPulse': {
+			const heartbeat = Math.pow(Math.sin(phase * frequency), 4) * amplitude;
+			const organic = turbulentNoise(time * 0.6 + index * 0.2, 3) * complexity;
+			const pulse = Math.sin(phase * 3 + index * 0.1) * 0.5 + 0.5;
+			
+			result.dy = heartbeat * (0.8 + organic * 0.4);
+			result.dx = organic * amplitude * 0.3;
+			result.scale = 0.85 + 0.3 * pulse + organic * 0.1;
+			result.opacity = 0.7 + 0.3 * pulse;
+			result.blur = (1 - pulse) * chaos * 2;
+			break;
+		}
+		
+		case 'cosmicDance': {
+			const orbit1 = Math.sin(phase * frequency + index * 0.1) * amplitude * 0.8;
+			const orbit2 = Math.cos(phase * frequency * 0.7 + index * 0.15) * amplitude * 0.6;
+			const cosmic = Math.sin(phase * 0.3) * complexity;
+			const stellar = turbulentNoise(time * 0.2 + index * 0.4, 2);
+			
+			result.dx = orbit1 + stellar * amplitude * 0.2;
+			result.dy = orbit2 + cosmic * amplitude * 0.4;
+			result.rotation = phase * 10 + stellar * 45;
+			result.scale = 0.8 + 0.4 * (Math.sin(phase * 2 + index * 0.3) + 1) / 2;
+			result.opacity = 0.6 + 0.4 * Math.abs(cosmic);
+			break;
+		}
+		
+		case 'neuralNetwork': {
+			const synapse = Math.sin(phase * frequency * 3 + index * 0.6) > 0.3 ? 1 : 0;
+			const signal = synapse * amplitude * (Math.sin(phase * 5) + 1) / 2;
+			const network = turbulentNoise(time * 0.7 + index * 0.25, 2) * complexity;
+			
+			result.dy = signal * 0.8 + network * amplitude * 0.3;
+			result.dx = network * amplitude * 0.4;
+			result.scale = synapse ? 1.2 + network * 0.3 : 0.8;
+			result.opacity = synapse ? 1 : 0.4 + 0.3 * Math.abs(network);
+			result.blur = synapse ? 0 : chaos * 3;
+			break;
 		}
 	}
+	
+	// Apply chaos to all properties
+	if (chaos > 0) {
+		const chaosFactor = chaos * 0.3;
+		result.dx += (Math.random() - 0.5) * amplitude * chaosFactor;
+		result.dy += (Math.random() - 0.5) * amplitude * chaosFactor;
+		result.rotation += (Math.random() - 0.5) * 10 * chaosFactor;
+	}
+	
+	return result;
 }
 
-function applyEasing(v: number, curve: 'linear' | 'easeInOut' | 'easeIn' | 'easeOut') {
+function applyAdvancedEasing(v: number, curve: string) {
 	const clamp = (x: number) => Math.max(-1, Math.min(1, x));
 	switch (curve) {
+		case 'bounce':
+			return clamp(Math.abs(v) * Math.sin(v * Math.PI * 4));
+		case 'elastic':
+			return clamp(v * Math.sin(v * Math.PI * 6) * Math.exp(-Math.abs(v) * 2));
+		case 'back':
+			return clamp(v * (2.7 * v * v - 1.7 * v));
 		case 'easeIn':
-			return clamp(v * v);
+			return clamp(v * v * v);
 		case 'easeOut':
-			return clamp(Math.sqrt(Math.abs(v)) * Math.sign(v));
+			return clamp(1 - Math.pow(1 - Math.abs(v), 3)) * Math.sign(v);
 		case 'easeInOut':
-			return clamp(0.5 * (Math.sin((v * Math.PI) / 2) + Math.sign(v)));
+			return clamp(v < 0 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2);
 		default:
 			return v;
 	}
 }
 
-// lightweight 1D noise for liquid preset
-function perlin1D(x: number) {
+// Multi-octave turbulent noise
+function turbulentNoise(x: number, octaves: number = 4): number {
+	let value = 0;
+	let amplitude = 1;
+	let frequency = 1;
+	
+	for (let i = 0; i < octaves; i++) {
+		value += Math.abs(perlin1D(x * frequency)) * amplitude;
+		amplitude *= 0.5;
+		frequency *= 2;
+	}
+	
+	return (value - 0.5) * 2; // Normalize to -1..1
+}
+
+function perlin1D(x: number): number {
 	const i = Math.floor(x);
 	const f = x - i;
 	const u = f * f * (3 - 2 * f);
 	return lerp(hash(i), hash(i + 1), u);
 }
 
-function hash(n: number) {
+function hash(n: number): number {
 	const s = Math.sin(n * 127.1) * 43758.5453123;
 	return (s - Math.floor(s)) * 2 - 1;
 }
 
-function lerp(a: number, b: number, t: number) {
+function lerp(a: number, b: number, t: number): number {
 	return a + (b - a) * t;
 }

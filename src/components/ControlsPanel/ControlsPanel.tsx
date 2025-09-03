@@ -132,19 +132,17 @@ export function ControlsPanel() {
 					onChange={(e) => state.set('motion', { ...state.motion, preset: e.target.value as any })}
 				>
 					<option value="none">None</option>
-					<option value="wave">Wave</option>
-					<option value="drift">Drift</option>
-					<option value="jitter">Jitter</option>
-					<option value="breathe">Breathe</option>
-					<option value="bounce">Bounce</option>
-					<option value="elastic">Elastic</option>
-					<option value="ripple">Ripple</option>
-					<option value="cascade">Cascade</option>
-					<option value="typeOn">Type-on</option>
-					<option value="liquid">Liquid</option>
-					<option value="orbit">Orbit</option>
-					<option value="swirl">Swirl</option>
-					<option value="shimmer">Shimmer</option>
+					<option value="vortex">🌪️ Vortex</option>
+					<option value="gravity">🌍 Gravity</option>
+					<option value="magnetism">🧲 Magnetism</option>
+					<option value="fluidDynamics">🌊 Fluid Dynamics</option>
+					<option value="quantumFlicker">⚛️ Quantum Flicker</option>
+					<option value="dimensionalRift">🌀 Dimensional Rift</option>
+					<option value="psychedelic">🌈 Psychedelic</option>
+					<option value="glitchMatrix">💾 Glitch Matrix</option>
+					<option value="organicPulse">💓 Organic Pulse</option>
+					<option value="cosmicDance">✨ Cosmic Dance</option>
+					<option value="neuralNetwork">🧠 Neural Network</option>
 				</select>
 				<label className="text-xs opacity-70">Amplitude: {state.motion.amplitude}px</label>
 				<input type="range" min={0} max={100} value={state.motion.amplitude} onChange={(e) => state.set('motion', { ...state.motion, amplitude: Number(e.target.value) })} className="w-full" />
@@ -154,12 +152,19 @@ export function ControlsPanel() {
 				<input type="range" min={0} max={0.3} step={0.01} value={state.motion.stagger} onChange={(e) => state.set('motion', { ...state.motion, stagger: Number(e.target.value) })} className="w-full" />
 				<label className="text-xs opacity-70">Loop Duration: {state.motion.loopSeconds}s</label>
 				<input type="range" min={2} max={20} step={1} value={state.motion.loopSeconds} onChange={(e) => state.set('motion', { ...state.motion, loopSeconds: Number(e.target.value) })} className="w-full" />
+				<label className="text-xs opacity-70">Complexity: {state.motion.complexity.toFixed(2)}</label>
+				<input type="range" min={0} max={1} step={0.01} value={state.motion.complexity} onChange={(e) => state.set('motion', { ...state.motion, complexity: Number(e.target.value) })} className="w-full" />
+				<label className="text-xs opacity-70">Chaos: {state.motion.chaos.toFixed(2)}</label>
+				<input type="range" min={0} max={1} step={0.01} value={state.motion.chaos} onChange={(e) => state.set('motion', { ...state.motion, chaos: Number(e.target.value) })} className="w-full" />
 				<label className="text-xs opacity-70">Curve: {state.motion.curve}</label>
 				<select className="w-full bg-white/5 rounded p-2 text-sm" value={state.motion.curve} onChange={(e) => state.set('motion', { ...state.motion, curve: e.target.value as any })}>
 					<option value="linear">Linear</option>
 					<option value="easeIn">Ease In</option>
 					<option value="easeOut">Ease Out</option>
 					<option value="easeInOut">Ease In Out</option>
+					<option value="bounce">Bounce</option>
+					<option value="elastic">Elastic</option>
+					<option value="back">Back</option>
 				</select>
 			</section>
 		</div>

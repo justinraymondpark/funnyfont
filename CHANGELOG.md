@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0 - MAJOR ANIMATION OVERHAUL 🚀
+- Complete redesign of motion system with advanced physics
+- Multi-dimensional transforms: dx/dy, scale, rotation, skew, blur
+- 11 sophisticated presets: Vortex, Gravity, Magnetism, Fluid Dynamics, Quantum Flicker, Dimensional Rift, Psychedelic, Glitch Matrix, Organic Pulse, Cosmic Dance, Neural Network
+- Advanced easing curves: bounce, elastic, back
+- Complexity and chaos controls for layered effects
+- Turbulent noise and particle behaviors
+- Time-based organic motion patterns
+
 ## 0.3.0
 - Upgrade motion engine: dx/dy/opacity, lightweight noise
 - New presets: liquid, orbit, swirl, shimmer
