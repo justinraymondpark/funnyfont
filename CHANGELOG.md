@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0
+- Upgrade motion engine: dx/dy/opacity, lightweight noise
+- New presets: liquid, orbit, swirl, shimmer
+- Expanded curated variable fonts list
+
 ## 0.2.1
 - Expand motion presets: breathe, bounce, elastic, ripple, cascade, type-on
 - Per-character opacity for cascade and type-on

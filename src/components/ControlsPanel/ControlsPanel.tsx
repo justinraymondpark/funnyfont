@@ -5,7 +5,17 @@ const variableExamples = [
 	{ name: 'Inter', axes: ['wght'] },
 	{ name: 'Roboto Flex', axes: ['wght', 'wdth', 'opsz'] },
 	{ name: 'Recursive', axes: ['wght', 'slnt'] },
-	{ name: 'IBM Plex Sans', axes: ['wght'] },
+	{ name: 'Fraunces', axes: ['wght', 'opsz'] },
+	{ name: 'Space Grotesk', axes: ['wght'] },
+	{ name: 'Source Serif 4', axes: ['wght'] },
+	{ name: 'Manrope', axes: ['wght'] },
+	{ name: 'Plus Jakarta Sans', axes: ['wght'] },
+	{ name: 'Lexend', axes: ['wght'] },
+	{ name: 'Outfit', axes: ['wght'] },
+	{ name: 'Figtree', axes: ['wght'] },
+	{ name: 'Noto Sans', axes: ['wght'] },
+	{ name: 'Noto Serif', axes: ['wght'] },
+	{ name: 'Roboto Serif', axes: ['wght'] },
 ];
 
 export function ControlsPanel() {
@@ -131,6 +141,10 @@ export function ControlsPanel() {
 					<option value="ripple">Ripple</option>
 					<option value="cascade">Cascade</option>
 					<option value="typeOn">Type-on</option>
+					<option value="liquid">Liquid</option>
+					<option value="orbit">Orbit</option>
+					<option value="swirl">Swirl</option>
+					<option value="shimmer">Shimmer</option>
 				</select>
 				<label className="text-xs opacity-70">Amplitude: {state.motion.amplitude}px</label>
 				<input type="range" min={0} max={100} value={state.motion.amplitude} onChange={(e) => state.set('motion', { ...state.motion, amplitude: Number(e.target.value) })} className="w-full" />
