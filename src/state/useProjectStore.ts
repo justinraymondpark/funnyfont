@@ -23,6 +23,14 @@ export type ProjectState = {
 		solid: string;
 		gradient: { type: 'linear' | 'radial' | 'conic'; stops: GradientStop[]; angle: number };
 	};
+	motion: {
+		preset: 'none' | 'wave' | 'drift' | 'jitter';
+		amplitude: number;
+		frequency: number;
+		stagger: number;
+		curve: 'linear' | 'easeInOut' | 'easeIn' | 'easeOut';
+		loopSeconds: number;
+	};
 	renderer: 'svg';
 };
 
@@ -42,6 +50,7 @@ const defaultState: ProjectState = {
 			{ pos: 1, color: '#00F0FF' },
 		] },
 	},
+	motion: { preset: 'wave', amplitude: 16, frequency: 0.5, stagger: 0.05, curve: 'easeInOut', loopSeconds: 6 },
 	renderer: 'svg',
 };
 

@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useProjectStore } from '../state/useProjectStore';
 import { ensureFontStylesheets } from '../services/FontManager';
+import { AnimatedText } from './AnimatedText';
 
 export function PreviewSurface() {
 	const { text, font, layout, color } = useProjectStore();
@@ -32,9 +33,9 @@ export function PreviewSurface() {
 					)}
 				</defs>
 				<rect x="0" y="0" width="100%" height="100%" fill="#0b0b0f" />
-				<text
-					x="960"
-					y="540"
+				<AnimatedText
+					x={960}
+					y={540}
 					textAnchor={textAnchor as any}
 					fill={color.mode === 'solid' ? color.solid : `url(#${gradientId})`}
 					style={{
@@ -44,9 +45,8 @@ export function PreviewSurface() {
 						lineHeight: layout.lineHeight,
 						...fontVariation,
 					}}
-				>
-					{text}
-				</text>
+					text={text}
+				/>
 			</svg>
 		</div>
 	);

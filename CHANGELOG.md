@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0
+- Add motion system with presets (wave, drift, jitter)
+- Per-character SVG tspans with rAF-driven loop
+- Motion controls: preset, amplitude, frequency, stagger, curve, loop duration
+
 ## 0.1.1
 - Replace webfontloader with safe stylesheet injection to fix Netlify runtime error
 - Remove webfontloader dependency

@@ -113,6 +113,35 @@ export function ControlsPanel() {
 					</div>
 				)}
 			</section>
+
+			<section className="space-y-2">
+				<h2 className="text-sm uppercase tracking-widest text-white/60">Motion</h2>
+				<select
+					className="w-full bg-white/5 rounded p-2 text-sm"
+					value={state.motion.preset}
+					onChange={(e) => state.set('motion', { ...state.motion, preset: e.target.value as any })}
+				>
+					<option value="none">None</option>
+					<option value="wave">Wave</option>
+					<option value="drift">Drift</option>
+					<option value="jitter">Jitter</option>
+				</select>
+				<label className="text-xs opacity-70">Amplitude: {state.motion.amplitude}px</label>
+				<input type="range" min={0} max={100} value={state.motion.amplitude} onChange={(e) => state.set('motion', { ...state.motion, amplitude: Number(e.target.value) })} className="w-full" />
+				<label className="text-xs opacity-70">Frequency: {state.motion.frequency.toFixed(2)}</label>
+				<input type="range" min={0.1} max={3} step={0.05} value={state.motion.frequency} onChange={(e) => state.set('motion', { ...state.motion, frequency: Number(e.target.value) })} className="w-full" />
+				<label className="text-xs opacity-70">Stagger: {state.motion.stagger.toFixed(2)}</label>
+				<input type="range" min={0} max={0.3} step={0.01} value={state.motion.stagger} onChange={(e) => state.set('motion', { ...state.motion, stagger: Number(e.target.value) })} className="w-full" />
+				<label className="text-xs opacity-70">Loop Duration: {state.motion.loopSeconds}s</label>
+				<input type="range" min={2} max={20} step={1} value={state.motion.loopSeconds} onChange={(e) => state.set('motion', { ...state.motion, loopSeconds: Number(e.target.value) })} className="w-full" />
+				<label className="text-xs opacity-70">Curve: {state.motion.curve}</label>
+				<select className="w-full bg-white/5 rounded p-2 text-sm" value={state.motion.curve} onChange={(e) => state.set('motion', { ...state.motion, curve: e.target.value as any })}>
+					<option value="linear">Linear</option>
+					<option value="easeIn">Ease In</option>
+					<option value="easeOut">Ease Out</option>
+					<option value="easeInOut">Ease In Out</option>
+				</select>
+			</section>
 		</div>
 	);
 }
