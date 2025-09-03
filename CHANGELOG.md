@@ -8,6 +8,11 @@
 - Added debug cursor radius indicator
 - Fixed jittery behavior with improved smoothing
 
+## 1.2.0 - PER-LETTER REACTIONS 🔤
+- Each letterform now reacts to cursor proximity by adjusting variable font axes (`wght`, `wdth`, `opsz`, `slnt`)
+- Mode-specific axis modulation for more expressive behavior (e.g., heavier weight near cursor in attract mode)
+- Combined with transforms for rich per-letter interaction
+
 ## 1.1.0 - CURSOR INTERACTIONS 🎯
 - Real-time cursor interaction system with 5 modes:
   - 🧲 Attract: Characters pull toward cursor with scaling

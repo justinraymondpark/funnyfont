@@ -4,7 +4,7 @@ import { useProjectStore } from '../state/useProjectStore';
 type Props = React.SVGProps<SVGTextElement> & { text: string; mousePos: { x: number; y: number } };
 
 export function AnimatedText({ text, mousePos, ...rest }: Props) {
-	const { motion, cursor } = useProjectStore();
+	const { motion, cursor, font } = useProjectStore();
 	const groupRef = useRef<SVGGElement>(null);
 	const chars = useMemo(() => text.split(''), [text]);
 
@@ -48,6 +48,14 @@ export function AnimatedText({ text, mousePos, ...rest }: Props) {
 					const actualCharY = charY;
 					
 					const res = evaluateAdvancedPreset(motion.preset, phase + offset, motion, i, g.children.length, t);
+
+					// Compute influence for per-letter font variation reaction
+					const ddx = mousePos.x - actualCharX;
+					const ddy = mousePos.y - actualCharY;
+					const dist = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
+					const nd = Math.max(0, Math.min(1, 1 - dist / cursor.radius));
+					const eased = nd * nd * (3 - 2 * nd);
+					const influence = eased * cursor.strength;
 					
 					// Apply cursor interaction
 					const cursorEffect = evaluateCursorInteraction(cursor, mousePos, actualCharX, actualCharY, t);
@@ -69,6 +77,48 @@ export function AnimatedText({ text, mousePos, ...rest }: Props) {
 					
 					span.setAttribute('transform', transforms.join(' '));
 					span.setAttribute('opacity', finalOpacity.toFixed(3));
+
+					// Per-letter variable font axis reaction
+					try {
+						const baseWght = (font.axes && typeof font.axes.wght === 'number') ? font.axes.wght : 400;
+						const baseWdth = (font.axes && typeof font.axes.wdth === 'number') ? font.axes.wdth : 100;
+						const baseOpsz = (font.axes && typeof font.axes.opsz === 'number') ? font.axes.opsz : 14;
+						const baseSlnt = (font.axes && typeof font.axes.slnt === 'number') ? font.axes.slnt : 0;
+
+						const clamp = (v:number, min:number, max:number) => Math.max(min, Math.min(max, v));
+
+						let wDelta = 0, wdDelta = 0, oDelta = 0, sDelta = 0;
+						switch (cursor.mode) {
+							case 'attract':
+								wDelta = 300 * influence;
+								wdDelta = -20 * influence;
+								oDelta = 20 * influence;
+								break;
+							case 'repel':
+								wDelta = -200 * influence;
+								wdDelta = 25 * influence;
+								sDelta = -8 * influence;
+								break;
+							case 'distort':
+								sDelta = -10 * Math.sin(t * 2 + i * 0.2) * influence;
+								break;
+							case 'vortex':
+								wdDelta = 15 * Math.sin(t * 3 + i * 0.3) * influence;
+								oDelta = 10 * influence;
+								break;
+							case 'gravity':
+								wDelta = 150 * influence;
+								break;
+						}
+
+						const wght = clamp(baseWght + wDelta, 100, 900);
+						const wdth = clamp(baseWdth + wdDelta, 50, 200);
+						const opsz = clamp(baseOpsz + oDelta, 8, 144);
+						const slnt = clamp(baseSlnt + sDelta, -15, 0);
+
+						const fv = `'wght' ${wght}, 'wdth' ${wdth}, 'opsz' ${opsz}, 'slnt' ${slnt}`;
+						(span as any).style.setProperty('font-variation-settings', fv);
+					} catch {}
 					
 					// Advanced filter effects
 					if (finalBlur > 0) {
