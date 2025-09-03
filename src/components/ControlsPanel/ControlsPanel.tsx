@@ -167,6 +167,28 @@ export function ControlsPanel() {
 					<option value="back">Back</option>
 				</select>
 			</section>
+
+			<section className="space-y-2">
+				<h2 className="text-sm uppercase tracking-widest text-white/60">Cursor Interaction</h2>
+				<select
+					className="w-full bg-white/5 rounded p-2 text-sm"
+					value={state.cursor.mode}
+					onChange={(e) => state.set('cursor', { ...state.cursor, mode: e.target.value as any })}
+				>
+					<option value="none">None</option>
+					<option value="attract">🧲 Attract</option>
+					<option value="repel">💥 Repel</option>
+					<option value="distort">🌊 Distort</option>
+					<option value="vortex">🌪️ Vortex</option>
+					<option value="gravity">🌍 Gravity</option>
+				</select>
+				<label className="text-xs opacity-70">Strength: {state.cursor.strength.toFixed(2)}</label>
+				<input type="range" min={0} max={1} step={0.01} value={state.cursor.strength} onChange={(e) => state.set('cursor', { ...state.cursor, strength: Number(e.target.value) })} className="w-full" />
+				<label className="text-xs opacity-70">Radius: {state.cursor.radius}px</label>
+				<input type="range" min={50} max={500} step={10} value={state.cursor.radius} onChange={(e) => state.set('cursor', { ...state.cursor, radius: Number(e.target.value) })} className="w-full" />
+				<label className="text-xs opacity-70">Smoothing: {state.cursor.smoothing.toFixed(2)}</label>
+				<input type="range" min={0} max={1} step={0.01} value={state.cursor.smoothing} onChange={(e) => state.set('cursor', { ...state.cursor, smoothing: Number(e.target.value) })} className="w-full" />
+			</section>
 		</div>
 	);
 }

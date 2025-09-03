@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useProjectStore } from '../state/useProjectStore';
 
-type Props = React.SVGProps<SVGTextElement> & { text: string };
+type Props = React.SVGProps<SVGTextElement> & { text: string; mousePos: { x: number; y: number } };
 
-export function AnimatedText({ text, ...rest }: Props) {
-	const { motion } = useProjectStore();
+export function AnimatedText({ text, mousePos, ...rest }: Props) {
+	const { motion, cursor } = useProjectStore();
 	const groupRef = useRef<SVGGElement>(null);
 	const chars = useMemo(() => text.split(''), [text]);
 
@@ -22,21 +22,40 @@ export function AnimatedText({ text, ...rest }: Props) {
 				for (let i = 0; i < g.children.length; i++) {
 					const span = g.children[i] as SVGTextElement;
 					const offset = i * motion.stagger;
+					
+					// Calculate character position for cursor interaction
+					const charX = (rest.x || 0) as number;
+					const charY = (rest.y || 0) as number;
+					const charSpacing = 20; // Approximate character spacing
+					const actualCharX = charX + (i - g.children.length / 2) * charSpacing;
+					const actualCharY = charY;
+					
 					const res = evaluateAdvancedPreset(motion.preset, phase + offset, motion, i, g.children.length, t);
+					
+					// Apply cursor interaction
+					const cursorEffect = evaluateCursorInteraction(cursor, mousePos, actualCharX, actualCharY, t);
+					
+					// Combine motion and cursor effects
+					const finalDx = res.dx + cursorEffect.dx;
+					const finalDy = res.dy + cursorEffect.dy;
+					const finalScale = res.scale * cursorEffect.scale;
+					const finalRotation = res.rotation + cursorEffect.rotation;
+					const finalOpacity = res.opacity * cursorEffect.opacity;
+					const finalBlur = res.blur + cursorEffect.blur;
 					
 					// Apply multi-dimensional transforms
 					const transforms = [];
-					if (res.dx !== 0 || res.dy !== 0) transforms.push(`translate(${res.dx.toFixed(2)} ${res.dy.toFixed(2)})`);
-					if (res.scale !== 1) transforms.push(`scale(${res.scale.toFixed(3)})`);
-					if (res.rotation !== 0) transforms.push(`rotate(${res.rotation.toFixed(2)})`);
+					if (finalDx !== 0 || finalDy !== 0) transforms.push(`translate(${finalDx.toFixed(2)} ${finalDy.toFixed(2)})`);
+					if (finalScale !== 1) transforms.push(`scale(${finalScale.toFixed(3)})`);
+					if (finalRotation !== 0) transforms.push(`rotate(${finalRotation.toFixed(2)})`);
 					if (res.skewX !== 0) transforms.push(`skewX(${res.skewX.toFixed(2)})`);
 					
 					span.setAttribute('transform', transforms.join(' '));
-					span.setAttribute('opacity', res.opacity.toFixed(3));
+					span.setAttribute('opacity', finalOpacity.toFixed(3));
 					
 					// Advanced filter effects
-					if (res.blur > 0) {
-						span.setAttribute('filter', `blur(${res.blur.toFixed(1)}px)`);
+					if (finalBlur > 0) {
+						span.setAttribute('filter', `blur(${finalBlur.toFixed(1)}px)`);
 					} else {
 						span.removeAttribute('filter');
 					}
@@ -51,7 +70,7 @@ export function AnimatedText({ text, ...rest }: Props) {
 
 		rAF();
 		return () => cancelAnimationFrame(rafId);
-	}, [motion.preset, motion.amplitude, motion.frequency, motion.stagger, motion.curve, motion.loopSeconds, motion.complexity, motion.chaos]);
+	}, [motion.preset, motion.amplitude, motion.frequency, motion.stagger, motion.curve, motion.loopSeconds, motion.complexity, motion.chaos, cursor.mode, cursor.strength, cursor.radius, cursor.smoothing, mousePos]);
 
 	return (
 		<g ref={groupRef}>
@@ -324,4 +343,83 @@ function hash(n: number): number {
 
 function lerp(a: number, b: number, t: number): number {
 	return a + (b - a) * t;
+}
+
+function evaluateCursorInteraction(
+	cursor: { mode: string; strength: number; radius: number; smoothing: number },
+	mousePos: { x: number; y: number },
+	charX: number,
+	charY: number,
+	time: number
+): AnimationResult {
+	const result: AnimationResult = { dx: 0, dy: 0, scale: 1, rotation: 0, skewX: 0, opacity: 1, blur: 0 };
+	
+	if (cursor.mode === 'none') return result;
+	
+	// Calculate distance from cursor to character
+	const dx = mousePos.x - charX;
+	const dy = mousePos.y - charY;
+	const distance = Math.sqrt(dx * dx + dy * dy);
+	const normalizedDistance = Math.max(0, 1 - distance / cursor.radius);
+	const influence = normalizedDistance * cursor.strength;
+	
+	if (influence <= 0) return result;
+	
+	// Smooth the influence based on smoothing setting
+	const smoothedInfluence = cursor.smoothing > 0 
+		? influence * (0.5 + 0.5 * Math.sin(time * 3)) 
+		: influence;
+	
+	switch (cursor.mode) {
+		case 'attract': {
+			const pullStrength = smoothedInfluence * 60;
+			result.dx = (dx / distance) * pullStrength * normalizedDistance;
+			result.dy = (dy / distance) * pullStrength * normalizedDistance;
+			result.scale = 1 + smoothedInfluence * 0.3;
+			result.opacity = 1 + smoothedInfluence * 0.2;
+			break;
+		}
+		
+		case 'repel': {
+			const pushStrength = smoothedInfluence * 80;
+			result.dx = -(dx / distance) * pushStrength * normalizedDistance;
+			result.dy = -(dy / distance) * pushStrength * normalizedDistance;
+			result.scale = 1 - smoothedInfluence * 0.2;
+			result.blur = smoothedInfluence * 3;
+			break;
+		}
+		
+		case 'distort': {
+			const warpStrength = smoothedInfluence * 40;
+			result.dx = Math.sin(distance * 0.1 + time) * warpStrength;
+			result.dy = Math.cos(distance * 0.08 + time) * warpStrength;
+			result.skewX = smoothedInfluence * 15 * Math.sin(time * 2);
+			result.scale = 1 + smoothedInfluence * 0.5 * Math.sin(distance * 0.05);
+			result.blur = smoothedInfluence * 2;
+			break;
+		}
+		
+		case 'vortex': {
+			const angle = Math.atan2(dy, dx) + smoothedInfluence * Math.PI * 2;
+			const spiralRadius = smoothedInfluence * 50;
+			result.dx = Math.cos(angle) * spiralRadius - dx * 0.1;
+			result.dy = Math.sin(angle) * spiralRadius - dy * 0.1;
+			result.rotation = smoothedInfluence * 180 + angle * 57.2958; // Convert to degrees
+			result.scale = 1 + smoothedInfluence * 0.4;
+			break;
+		}
+		
+		case 'gravity': {
+			const gravityStrength = smoothedInfluence * smoothedInfluence * 100;
+			const falloff = Math.max(0.1, normalizedDistance);
+			result.dx = (dx / distance) * gravityStrength * falloff;
+			result.dy = (dy / distance) * gravityStrength * falloff + smoothedInfluence * 20; // Add downward pull
+			result.scale = 1 - smoothedInfluence * 0.3;
+			result.opacity = 1 - smoothedInfluence * 0.3;
+			result.blur = smoothedInfluence * 4;
+			break;
+		}
+	}
+	
+	return result;
 }

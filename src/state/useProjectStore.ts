@@ -33,6 +33,12 @@ export type ProjectState = {
 		complexity: number; // 0-1 for layered effects
 		chaos: number; // 0-1 for randomness/noise
 	};
+	cursor: {
+		mode: 'none' | 'attract' | 'repel' | 'distort' | 'vortex' | 'gravity';
+		strength: number; // 0-1
+		radius: number; // pixels
+		smoothing: number; // 0-1 for lag/smoothing
+	};
 	renderer: 'svg';
 };
 
@@ -53,6 +59,7 @@ const defaultState: ProjectState = {
 		] },
 	},
 	motion: { preset: 'vortex', amplitude: 24, frequency: 0.8, stagger: 0.08, curve: 'elastic', loopSeconds: 8, complexity: 0.7, chaos: 0.3 },
+	cursor: { mode: 'attract', strength: 0.6, radius: 200, smoothing: 0.3 },
 	renderer: 'svg',
 };
 

@@ -4,12 +4,30 @@ import { ensureFontStylesheets } from '../services/FontManager';
 import { AnimatedText } from './AnimatedText';
 
 export function PreviewSurface() {
-	const { text, font, layout, color } = useProjectStore();
+	const { text, font, layout, color, cursor } = useProjectStore();
 	const containerRef = useRef<HTMLDivElement>(null);
+	const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
 	useEffect(() => {
 		ensureFontStylesheets({ family: font.family, isVariable: font.isVariable, customCssUrl: font.url });
 	}, [font.family, font.url, font.isVariable]);
+
+	useEffect(() => {
+		const handleMouseMove = (e: MouseEvent) => {
+			if (containerRef.current) {
+				const rect = containerRef.current.getBoundingClientRect();
+				// Convert to SVG coordinate space (1920x1080)
+				const x = ((e.clientX - rect.left) / rect.width) * 1920;
+				const y = ((e.clientY - rect.top) / rect.height) * 1080;
+				setMousePos({ x, y });
+			}
+		};
+
+		if (cursor.mode !== 'none') {
+			document.addEventListener('mousemove', handleMouseMove);
+			return () => document.removeEventListener('mousemove', handleMouseMove);
+		}
+	}, [cursor.mode]);
 
 	const gradientId = useMemo(() => `grad-${Math.random().toString(36).slice(2)}`,[color]);
 	const fontVariation = useMemo(() => {
@@ -46,6 +64,7 @@ export function PreviewSurface() {
 						...fontVariation,
 					}}
 					text={text}
+					mousePos={mousePos}
 				/>
 			</svg>
 		</div>

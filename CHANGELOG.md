@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0 - CURSOR INTERACTIONS 🎯
+- Real-time cursor interaction system with 5 modes:
+  - 🧲 Attract: Characters pull toward cursor with scaling
+  - 💥 Repel: Characters push away with blur effects  
+  - 🌊 Distort: Warping and skewing based on distance
+  - 🌪️ Vortex: Spiral motion around cursor
+  - 🌍 Gravity: Gravitational pull with opacity fade
+- Customizable strength, radius, and smoothing controls
+- Mouse position tracking in SVG coordinate space
+- Dynamic character-to-cursor distance calculations
+
 ## 1.0.0 - MAJOR ANIMATION OVERHAUL 🚀
 - Complete redesign of motion system with advanced physics
 - Multi-dimensional transforms: dx/dy, scale, rotation, skew, blur
