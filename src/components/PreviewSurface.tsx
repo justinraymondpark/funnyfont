@@ -1,16 +1,13 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useProjectStore } from '../state/useProjectStore';
-import WebFont from 'webfontloader';
+import { ensureFontStylesheets } from '../services/FontManager';
 
 export function PreviewSurface() {
 	const { text, font, layout, color } = useProjectStore();
 	const containerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		WebFont.load({
-			google: { families: [font.family + (font.isVariable ? ':ital,wght@0,100..900;1,100..900' : '')] },
-			custom: font.url ? { families: [font.family], urls: [font.url] } : undefined,
-		});
+		ensureFontStylesheets({ family: font.family, isVariable: font.isVariable, customCssUrl: font.url });
 	}, [font.family, font.url, font.isVariable]);
 
 	const gradientId = useMemo(() => `grad-${Math.random().toString(36).slice(2)}`,[color]);
