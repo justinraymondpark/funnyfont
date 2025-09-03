@@ -16,7 +16,7 @@ export function PreviewSurface() {
 		const handleMouseMove = (e: MouseEvent) => {
 			if (containerRef.current) {
 				const rect = containerRef.current.getBoundingClientRect();
-				// Convert to SVG coordinate space (1920x1080)
+				// Convert to SVG coordinate space (1920x1080) with proper scaling
 				const x = ((e.clientX - rect.left) / rect.width) * 1920;
 				const y = ((e.clientY - rect.top) / rect.height) * 1080;
 				setMousePos({ x, y });
@@ -24,8 +24,12 @@ export function PreviewSurface() {
 		};
 
 		if (cursor.mode !== 'none') {
-			document.addEventListener('mousemove', handleMouseMove);
-			return () => document.removeEventListener('mousemove', handleMouseMove);
+			// Use container-specific event listener for better accuracy
+			const container = containerRef.current;
+			if (container) {
+				container.addEventListener('mousemove', handleMouseMove);
+				return () => container.removeEventListener('mousemove', handleMouseMove);
+			}
 		}
 	}, [cursor.mode]);
 
@@ -51,6 +55,17 @@ export function PreviewSurface() {
 					)}
 				</defs>
 				<rect x="0" y="0" width="100%" height="100%" fill="#0b0b0f" />
+				{/* Debug cursor indicator */}
+				{cursor.mode !== 'none' && (
+					<circle
+						cx={mousePos.x}
+						cy={mousePos.y}
+						r={cursor.radius}
+						fill="none"
+						stroke="rgba(255,255,255,0.1)"
+						strokeWidth="1"
+					/>
+				)}
 				<AnimatedText
 					x={960}
 					y={540}

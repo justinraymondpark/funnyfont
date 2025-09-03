@@ -23,11 +23,28 @@ export function AnimatedText({ text, mousePos, ...rest }: Props) {
 					const span = g.children[i] as SVGTextElement;
 					const offset = i * motion.stagger;
 					
-					// Calculate character position for cursor interaction
+					// Calculate more accurate character position for cursor interaction
+					const textElement = g.querySelector('text');
 					const charX = (rest.x || 0) as number;
 					const charY = (rest.y || 0) as number;
-					const charSpacing = 20; // Approximate character spacing
-					const actualCharX = charX + (i - g.children.length / 2) * charSpacing;
+					
+					// Get actual character spacing based on font size
+					const fontSize = textElement ? 
+						parseInt(getComputedStyle(textElement).fontSize) || 120 : 120;
+					const charSpacing = fontSize * 0.6; // More accurate spacing estimate
+					
+					// Calculate position based on text anchor
+					const textAnchor = textElement?.getAttribute('text-anchor') || 'middle';
+					let actualCharX = charX;
+					
+					if (textAnchor === 'middle') {
+						actualCharX = charX + (i - (g.children.length - 1) / 2) * charSpacing;
+					} else if (textAnchor === 'start') {
+						actualCharX = charX + i * charSpacing;
+					} else if (textAnchor === 'end') {
+						actualCharX = charX - (g.children.length - 1 - i) * charSpacing;
+					}
+					
 					const actualCharY = charY;
 					
 					const res = evaluateAdvancedPreset(motion.preset, phase + offset, motion, i, g.children.length, t);
@@ -354,38 +371,46 @@ function evaluateCursorInteraction(
 ): AnimationResult {
 	const result: AnimationResult = { dx: 0, dy: 0, scale: 1, rotation: 0, skewX: 0, opacity: 1, blur: 0 };
 	
-	if (cursor.mode === 'none') return result;
+	if (cursor.mode === 'none' || !mousePos.x || !mousePos.y) return result;
 	
 	// Calculate distance from cursor to character
 	const dx = mousePos.x - charX;
 	const dy = mousePos.y - charY;
 	const distance = Math.sqrt(dx * dx + dy * dy);
-	const normalizedDistance = Math.max(0, 1 - distance / cursor.radius);
-	const influence = normalizedDistance * cursor.strength;
 	
-	if (influence <= 0) return result;
+	// Improved falloff curve - smoother transition
+	const normalizedDistance = Math.max(0, Math.min(1, 1 - distance / cursor.radius));
+	const easedDistance = normalizedDistance * normalizedDistance * (3 - 2 * normalizedDistance); // Smoothstep
+	const influence = easedDistance * cursor.strength;
 	
-	// Smooth the influence based on smoothing setting
+	if (influence <= 0.001) return result;
+	
+	// Smooth the influence based on smoothing setting - less jittery
 	const smoothedInfluence = cursor.smoothing > 0 
-		? influence * (0.5 + 0.5 * Math.sin(time * 3)) 
+		? influence * (0.8 + 0.2 * Math.sin(time * 2 + distance * 0.01)) 
 		: influence;
 	
 	switch (cursor.mode) {
 		case 'attract': {
-			const pullStrength = smoothedInfluence * 60;
-			result.dx = (dx / distance) * pullStrength * normalizedDistance;
-			result.dy = (dy / distance) * pullStrength * normalizedDistance;
-			result.scale = 1 + smoothedInfluence * 0.3;
-			result.opacity = 1 + smoothedInfluence * 0.2;
+			const pullStrength = smoothedInfluence * 80;
+			if (distance > 1) { // Avoid division by zero
+				result.dx = (dx / distance) * pullStrength;
+				result.dy = (dy / distance) * pullStrength;
+			}
+			result.scale = 1 + smoothedInfluence * 0.5;
+			result.opacity = Math.min(1, 1 + smoothedInfluence * 0.3);
 			break;
 		}
 		
 		case 'repel': {
-			const pushStrength = smoothedInfluence * 80;
-			result.dx = -(dx / distance) * pushStrength * normalizedDistance;
-			result.dy = -(dy / distance) * pushStrength * normalizedDistance;
-			result.scale = 1 - smoothedInfluence * 0.2;
-			result.blur = smoothedInfluence * 3;
+			const pushStrength = smoothedInfluence * 100;
+			if (distance > 1) { // Avoid division by zero
+				result.dx = -(dx / distance) * pushStrength;
+				result.dy = -(dy / distance) * pushStrength;
+			}
+			result.scale = Math.max(0.1, 1 - smoothedInfluence * 0.4);
+			result.blur = smoothedInfluence * 4;
+			result.opacity = Math.max(0.3, 1 - smoothedInfluence * 0.5);
 			break;
 		}
 		

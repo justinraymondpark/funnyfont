@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1 - CURSOR INTERACTION FIXES 🔧
+- Fixed mouse position tracking and coordinate conversion
+- Improved character positioning calculation for accurate distances
+- Added smoothstep falloff curves for smoother interactions
+- Enhanced attract/repel responsiveness with better strength values
+- Added debug cursor radius indicator
+- Fixed jittery behavior with improved smoothing
+
 ## 1.1.0 - CURSOR INTERACTIONS 🎯
 - Real-time cursor interaction system with 5 modes:
   - 🧲 Attract: Characters pull toward cursor with scaling
