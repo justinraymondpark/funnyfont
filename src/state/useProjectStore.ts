@@ -24,7 +24,7 @@ export type ProjectState = {
 		gradient: { type: 'linear' | 'radial' | 'conic'; stops: GradientStop[]; angle: number };
 	};
 	motion: {
-		preset: 'none' | 'wave' | 'drift' | 'jitter';
+		preset: 'none' | 'wave' | 'drift' | 'jitter' | 'breathe' | 'bounce' | 'elastic' | 'ripple' | 'cascade' | 'typeOn';
 		amplitude: number;
 		frequency: number;
 		stagger: number;

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+- Expand motion presets: breathe, bounce, elastic, ripple, cascade, type-on
+- Per-character opacity for cascade and type-on
+
 ## 0.2.0
 - Add motion system with presets (wave, drift, jitter)
 - Per-character SVG tspans with rAF-driven loop

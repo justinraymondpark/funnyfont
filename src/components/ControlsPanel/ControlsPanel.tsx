@@ -125,6 +125,12 @@ export function ControlsPanel() {
 					<option value="wave">Wave</option>
 					<option value="drift">Drift</option>
 					<option value="jitter">Jitter</option>
+					<option value="breathe">Breathe</option>
+					<option value="bounce">Bounce</option>
+					<option value="elastic">Elastic</option>
+					<option value="ripple">Ripple</option>
+					<option value="cascade">Cascade</option>
+					<option value="typeOn">Type-on</option>
 				</select>
 				<label className="text-xs opacity-70">Amplitude: {state.motion.amplitude}px</label>
 				<input type="range" min={0} max={100} value={state.motion.amplitude} onChange={(e) => state.set('motion', { ...state.motion, amplitude: Number(e.target.value) })} className="w-full" />
